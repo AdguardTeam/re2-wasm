@@ -165,7 +165,7 @@ export class RE2 {
   private groupNames: {[group: number]: string} = {};
   private namedGroups: {[name: string]: number} = {};
 
-  constructor(pattern: string | RegExp | RE2, flags?: string) {
+  constructor(pattern: string | RegExp | RE2, flags?: string, maxMem?: number) {
     if (typeof pattern !== 'string') {
       if (pattern instanceof RegExp || pattern instanceof RE2) {
         flags = flags ?? pattern.flags;
@@ -215,7 +215,8 @@ export class RE2 {
       translateRegExp(pattern, this._multiline),
       this._ignoreCase,
       this._multiline,
-      this._dotAll
+      this._dotAll,
+      maxMem ?? 0
     );
     if (!this.wrapper.ok()) {
       throw new SyntaxError(

@@ -15,6 +15,8 @@
     "test": "node ./third_party/node-re2/tests/tests.js",
     "lint": "gts lint src/*.ts",
     "clean": "gts clean",
+    "compile-emcc": "docker run --rm -v $(pwd):/src emscripten/emsdk make -j12",
+    "compile-ts": "tsc && cp -r wasm build/",
     "compile": "make -j12 && tsc && cp -r wasm build/",
     "fix": "gts fix src/*.ts",
     "prepare": "npm run compile",

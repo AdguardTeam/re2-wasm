@@ -42,7 +42,7 @@ export interface WrappedRE2Constructor {
 }
 
 export class WrappedRE2 implements WrappedRE2Interface {
-  constructor(pattern: string, ignoreCase: boolean, multiline: boolean, dotAll: boolean);
+  constructor(pattern: string, ignoreCase: boolean, multiline: boolean, dotAll: boolean, maxMem: number);
   ok(): boolean;
   error(): string;
   pattern(): string;

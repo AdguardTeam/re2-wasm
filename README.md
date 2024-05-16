@@ -1,3 +1,28 @@
+# Fork disclaimer
+
+This is a fork of [re2-wasm] that allows specifying maximum memory limit for
+a regular expression. Having this version is important for properly validating
+regular expressions in a browser extension that uses Declarative Net Request.
+
+How to compile locally:
+
+```sh
+npm install
+npm run compile-emcc
+npm run compile-ts
+```
+
+Run tests to check that it works (see `test_invalid.js` for the test that checks
+that memory limit actually works):
+
+```sh
+npm run test
+```
+
+[re2-wasm]: https://github.com/google/re2-wasm
+
+Below is the original README content.
+
 # re2-wasm [![NPM version][npm-img]][npm-url]
 
 [npm-img]: https://img.shields.io/npm/v/re2-wasm.svg

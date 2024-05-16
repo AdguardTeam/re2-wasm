@@ -29,19 +29,22 @@ inline size_t getUtf8CharSize(char ch)
 	return ((0xE5000000 >> ((ch >> 3) & 0x1E)) & 3) + 1;
 }
 
-static std::shared_ptr<re2::RE2::Options> getOptionsFromFlags(const bool ignoreCase, const bool multiline, const bool dotAll) {
+static std::shared_ptr<re2::RE2::Options> getOptionsFromFlags(const bool ignoreCase, const bool multiline, const bool dotAll, const int maxMem) {
   std::shared_ptr<re2::RE2::Options> options = std::make_shared<re2::RE2::Options>();
   options->set_log_errors(false);
   options->set_case_sensitive(!ignoreCase);
   options->set_one_line(!multiline);
   options->set_dot_nl(dotAll);
+  if (maxMem > 0) {
+    options->set_max_mem(maxMem);
+  }
   return options;
 }
 
 class WrappedRE2 {
   public:
-    WrappedRE2(const std::string& pattern, const bool ignoreCase, const bool multiline, const bool dotAll):
-      wrapped(re2::StringPiece(pattern), *getOptionsFromFlags(ignoreCase, multiline, dotAll)) {}
+    WrappedRE2(const std::string& pattern, const bool ignoreCase, const bool multiline, const bool dotAll, const int maxMem):
+      wrapped(re2::StringPiece(pattern), *getOptionsFromFlags(ignoreCase, multiline, dotAll, maxMem)) {}
 
     bool ok() const {
       return wrapped.ok();
@@ -107,7 +110,7 @@ class WrappedRE2 {
 
 EMSCRIPTEN_BINDINGS(re2) {
   class_<WrappedRE2>("WrappedRE2")
-    .smart_ptr_constructor("WrappedRE2", std::make_shared<WrappedRE2, const std::string&, const bool, const bool, const bool>)
+    .smart_ptr_constructor("WrappedRE2", std::make_shared<WrappedRE2, const std::string&, const bool, const bool, const bool, const int>)
     .function("ok", &WrappedRE2::ok)
     .function("error", &WrappedRE2::error)
     .function("pattern", &WrappedRE2::pattern)

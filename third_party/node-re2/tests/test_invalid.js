@@ -14,6 +14,17 @@ unit.add(module, [
 
 		var threw;
 
+		// Max mem limit
+		threw = false;
+		try {
+			new RE2(/^https:\/\/[0-9a-f]{10}\.[0-9a-f]{10}\.com\/[0-9a-f]{32}\.js/u, undefined, 2 << 10);
+		} catch (e) {
+			threw = true;
+			eval(t.TEST("e instanceof SyntaxError"));
+			eval(t.TEST("e.message.includes('pattern too large')"));
+		}
+		t.test(threw);
+
 		// Backreferences
 		threw = false;
 		try {
