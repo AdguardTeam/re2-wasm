@@ -21,7 +21,7 @@ npm run test
 
 [re2-wasm]: https://github.com/google/re2-wasm
 
-Below is the original README content.
+**Below is the original README content.**
 
 # re2-wasm [![NPM version][npm-img]][npm-url]
 
