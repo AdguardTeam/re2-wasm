@@ -4,11 +4,52 @@ This is a fork of [re2-wasm] that allows specifying maximum memory limit for
 a regular expression. Having this version is important for properly validating
 regular expressions in a browser extension that uses Declarative Net Request.
 
+How to clone:
+This library contains a submodule, so you need to clone it recursively:
+
+```sh
+    git clone --recursive git@github.com:AdguardTeam/re2-wasm.git
+```
+
 How to compile locally:
+
+If your machine has supported docker images (Mac OS on M1 does not have them yet):
 
 ```sh
 npm install
-npm run compile-emcc
+npm run compile-emcc # or check prerequisites for Mac OS below
+npm run compile-ts
+```
+
+If not:
+
+Prerequisites for Mac OS:
+You need to have installed Emscripten SDK.
+https://emscripten.org/docs/getting_started/downloads.html#download-and-install
+```
+# Get the emsdk repo
+git clone https://github.com/emscripten-core/emsdk.git
+
+# Enter that directory
+cd emsdk
+
+# Fetch the latest version of the emsdk (not needed the first time you clone)
+git pull
+
+# Download and install the latest SDK tools.
+./emsdk install latest
+
+# Make the "latest" SDK "active" for the current user. (writes .emscripten file)
+./emsdk activate latest
+
+# Activate PATH and other environment variables in the current terminal
+source ./emsdk_env.sh
+
+```
+
+```sh
+npm install
+npm run compile
 npm run compile-ts
 ```
 
