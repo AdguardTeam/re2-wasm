@@ -9,8 +9,7 @@ environments:
 
 npmjs:
   docker:
-    image: adguard/node-ssh:18.19--0
-    # FIXME npm cache
+    image: adguard/node-ssh:21.7--2
   triggers: [ ]
   tasks:
     - checkout:

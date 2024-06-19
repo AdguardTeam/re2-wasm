@@ -5,7 +5,7 @@ plan:
   key: RE2WASMINCREMENT
   name: re2-wasm - increment
 variables:
-  dockerContainer: adguard/node-ssh:18.19--0
+  dockerContainer: adguard/node-ssh:21.7--2
 
 stages:
   - Increment:
