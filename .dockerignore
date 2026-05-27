@@ -1,0 +1,27 @@
+# Version control
+.git
+
+# IDE and editor files
+.idea
+.vscode
+.DS_Store
+
+# Build caches
+.eslintcache
+*.tsbuildinfo
+
+# Build outputs (rebuilt inside Docker)
+build/
+wasm/
+# Keep hand-written TypeScript declaration files needed for tsc
+!wasm/*.d.ts
+output/
+
+# Dependencies
+node_modules/
+
+# Docker files
+Dockerfile*
+
+# Logs
+*.log

@@ -4,8 +4,6 @@ plan:
   project-key: AJL
   key: RE2BUILD
   name: re2-wasm - build
-variables:
-  dockerContainer: emscripten/emsdk:3.1.61
 
 stages:
   - Build:
@@ -18,33 +16,29 @@ Build:
   key: BUILD
   other:
     clean-working-dir: true
-  docker:
-    image: "${bamboo.dockerContainer}"
   tasks:
     - checkout:
-        force-clean-build: 'true'
+        force-clean-build: true
     - script:
         interpreter: SHELL
         scripts:
           - |-
-            set -e
-            set -x
+            set -ex
 
             # Fix mixed logs
             exec 2>&1
 
-            ls -alt
+            export DOCKER_BUILDKIT=1
 
-            # Install dependencies
-            npm install
-
-            # Build
-            npm run compile
-
-            # Pack package into a tarball
-            npm pack && mv adguard-re2-wasm-*.tgz re2-wasm.tgz
+            docker build \
+              --file Dockerfile \
+              --progress plain \
+              --build-arg BUILD_RUN_ID=${bamboo.buildNumber} \
+              --target build-output \
+              --output type=local,dest=output \
+              .
     - inject-variables:
-        file: ./build/build.txt
+        file: output/artifacts/build.txt
         scope: RESULT
         namespace: inject
     - any-task:
@@ -56,28 +50,15 @@ Build:
     - script:
         interpreter: SHELL
         scripts:
-          - |-
-            set -x
-            set -e
-
-            # Fix mixed logs
-            exec 2>&1
-
-            ls -la
-
-            echo "Size before cleanup:" && du -h | tail -n 1
-
-            rm -rf node_modules
-  
-            echo "Size after cleanup:" && du -h | tail -n 1
+          - "./bamboo-specs/scripts/cleanup.sh output/artifacts/re2-wasm.tgz"
   artifacts:
     - name: re2-wasm.tgz
-      location: .
+      location: output/artifacts
       pattern: re2-wasm.tgz
       shared: true
       required: true
   requirements:
-    - adg-docker: 'true'
+    - extension: 'true'
 
 triggers: []
 

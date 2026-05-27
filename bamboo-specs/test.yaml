@@ -4,60 +4,115 @@ plan:
   project-key: AJL
   key: RE2WASMTEST
   name: re2-wasm - tests
-variables:
-  dockerContainer: emscripten/emsdk:3.1.61
 
 stages:
-  - Test:
+  - Tests:
       manual: false
       final: false
       jobs:
+        - Lint
         - Test
+        - Build
+
+Lint:
+  key: LINT
+  other:
+    clean-working-dir: true
+  tasks:
+    - checkout:
+        force-clean-build: true
+    - script:
+        interpreter: SHELL
+        scripts:
+          - |-
+            set -ex
+
+            # Fix mixed logs
+            exec 2>&1
+
+            export DOCKER_BUILDKIT=1
+
+            docker build \
+              --file Dockerfile \
+              --progress plain \
+              --build-arg BUILD_RUN_ID=${bamboo.buildNumber} \
+              --target lint-output \
+              --output type=local,dest=output \
+              .
+  final-tasks:
+    - script: &cleanup-script
+        interpreter: SHELL
+        scripts:
+          - "./bamboo-specs/scripts/cleanup.sh"
+  requirements: &requirements
+    - extension: 'true'
 
 Test:
   key: TEST
-  docker:
-    image: "${bamboo.dockerContainer}"
+  other:
+    clean-working-dir: true
   tasks:
     - checkout:
-        force-clean-build: 'true'
+        force-clean-build: true
     - script:
         interpreter: SHELL
         scripts:
           - |-
-            set -e
-            set -x
+            set -ex
 
             # Fix mixed logs
             exec 2>&1
 
-            ls -alt
+            export DOCKER_BUILDKIT=1
 
-            # Install dependencies
-            npm install
-
-            # Run tests
-            npm run test
+            docker build \
+              --file Dockerfile \
+              --progress plain \
+              --build-arg BUILD_RUN_ID=${bamboo.buildNumber} \
+              --target test-output \
+              --output type=local,dest=output \
+              .
+    - script:
+        interpreter: SHELL
+        scripts:
+          - |-
+            if [ -f output/exit-code.txt ]; then
+              exit $(cat output/exit-code.txt)
+            fi
+            echo "output/exit-code.txt not found"
+            exit 1
   final-tasks:
+    - script: *cleanup-script
+  requirements: *requirements
+
+Build:
+  key: BLDCHK
+  other:
+    clean-working-dir: true
+  tasks:
+    - checkout:
+        force-clean-build: true
     - script:
         interpreter: SHELL
         scripts:
           - |-
-            set -x
-            set -e
+            set -ex
 
             # Fix mixed logs
             exec 2>&1
 
-            ls -la
+            export DOCKER_BUILDKIT=1
 
-            echo "Size before cleanup:" && du -h | tail -n 1
-
-            rm -rf node_modules
-
-            echo "Size after cleanup:" && du -h | tail -n 1
-  requirements:
-    - adg-docker: 'true'
+            docker build \
+              --file Dockerfile \
+              --progress plain \
+              --build-arg BUILD_RUN_ID=${bamboo.buildNumber} \
+              --target build-output \
+              --output type=local,dest=output \
+              .
+  final-tasks:
+    - script: *cleanup-script
+  requirements: *requirements
 
 branches:
   create: for-pull-request
@@ -74,7 +129,7 @@ notifications:
           name: Build webhook
           url: http://prod.jirahub.service.eu.consul/v1/webhook/bamboo
 
-labels: [ ]
+labels: []
 
 other:
   concurrent-build-plugin: system-default
