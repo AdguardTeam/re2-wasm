@@ -1,2 +1,8 @@
-node_modules
-build
+node_modules/
+build/
+
+.idea/
+.vscode/
+.sdd/
+
+.DS_Store
