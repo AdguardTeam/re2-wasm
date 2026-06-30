@@ -13,7 +13,9 @@
   "main": "build/src/re2.js",
   "scripts": {
     "test": "node ./third_party/node-re2/tests/tests.js",
-    "lint": "gts lint src/*.ts",
+    "lint": "npm run lint:ts && npm run lint:md",
+    "lint:ts": "gts lint src/*.ts",
+    "lint:md": "markdownlint .",
     "clean": "gts clean",
     "compile-emcc": "docker run --rm -v $(pwd):/src emscripten/emsdk make -j12",
     "compile-ts": "tsc && cp -r wasm build/",
@@ -30,6 +32,8 @@
     "@types/node": "^14.11.2",
     "gts": "^3.1.0",
     "heya-unit": "^0.3.0",
+    "markdownlint": "^0.28.2",
+    "markdownlint-cli": "^0.34.0",
     "typescript": "~4.1.3"
   },
   "engines": {
