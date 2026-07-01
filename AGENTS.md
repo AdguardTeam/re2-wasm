@@ -58,7 +58,7 @@ bounded memory usage.
 │   └── build-info.js      # Writes build.txt with the package version
 ├── third_party/
 │   └── node-re2/
-│       └── tests/         # Test suite adapted from node-re2 (~12 test files)
+│       └── tests/         # Test suite adapted from node-re2
 ├── bamboo-specs/          # Bamboo CI pipeline specs (build/test/deploy/increment)
 ├── docs/                  # Design docs and contribution guidelines
 ├── package.json           # npm package manifest
@@ -67,13 +67,14 @@ bounded memory usage.
 ├── Dockerfile             # Multi-stage CI build (lint, test, artifact packaging)
 ├── CHANGELOG.md           # Release history
 ├── README.md              # User-facing documentation
+├── DEVELOPMENT.md         # Developer setup, workflow, and architecture
 └── LICENSE                # Apache 2.0
 ```
 
 ## Build And Test Commands
 
 ```bash
-# Install dependencies (does not compile — only Node deps)
+# Install dev dependencies (use --ignore-scripts to skip the auto-compile via prepare)
 npm install
 
 # Full build: compile C++ → WASM via Emscripten, compile TypeScript, write build info
@@ -88,7 +89,7 @@ npm run compile-ts
 # Run tests (compiles first via pretest, then lints via posttest)
 npm test
 
-# Lint TypeScript sources
+# Lint TypeScript and Markdown sources
 npm run lint
 
 # Auto-fix lint issues
@@ -101,13 +102,8 @@ npm run clean
 npm run increment
 ```
 
-The full build pipeline is:
-
-1. **C++ → WASM**: `make -j12` invokes Emscripten to compile `wrap/re2_wrap.cc`
-   and all RE2 source files into `wasm/re2.js`
-2. **TypeScript → JS**: `tsc` compiles `src/re2.ts` into `build/src/`
-3. **WASM assets**: `wasm/` directory is copied into `build/`
-4. **Build info**: `scripts/build-info.js` writes `build/build.txt`
+The full build pipeline is documented in
+[DEVELOPMENT.md — Full Build Pipeline](DEVELOPMENT.md#full-build-pipeline).
 
 ## Contribution Instructions
 
@@ -204,20 +200,10 @@ The project uses a **layered architecture**:
    non-backtracking regular expression matching.
    Examples: `deps/re2/` (vendored submodule).
 
-Dependency flow:
-
-```text
-JavaScript API (src/re2.ts)
-     ↓
-WASM Bridge (wasm/re2.js, wasm/re2.d.ts)
-     ↓
-C++ Bindings (wrap/re2_wrap.cc)
-     ↓
-RE2 Library (deps/re2/)
-```
-
-Each layer may only depend on the layer directly below it. No layer may depend
-on a layer above it.
+Each layer may only depend on the layer directly below it; no layer may depend
+on a layer above it. For the full layer breakdown, dependency-flow diagram, and
+per-layer file mapping, see
+[DEVELOPMENT.md — Project Architecture](DEVELOPMENT.md#project-architecture).
 
 ### Code Quality
 
@@ -294,6 +280,7 @@ on a layer above it.
     - `README.md` — when the public API, build commands, or prerequisites change
     - `CHANGELOG.md` — when releasing a new version (Keep a Changelog format)
     - `AGENTS.md` — when project structure, build commands, or code guidelines change
+    - `DEVELOPMENT.md` — when build commands, prerequisites, or project architecture change
     - `docs/intermediate_API_design.md` — when the architectural design changes
 - **Hardcoded values**: Compile-time constants (e.g., Emscripten flags in the
   Makefile) are acceptable. Runtime code MUST NOT contain hardcoded secrets.
@@ -302,11 +289,12 @@ on a layer above it.
 
 All Markdown files MUST follow these formatting rules:
 
-- **Line length**: Keep lines at most 120 characters, but don't overwrap the
-  lines artificially short just to hit the limit, keep them close to 120
-  characters where possible. This is not a hard lint gate, but SHOULD be
-  followed for readability. Lines inside fenced code blocks are exempt from
-  this limit.
+- **Line length**: Keep lines at most 120 characters. This is enforced by the
+  markdownlint `line-length` rule (MD013, configured with `stern: true`), so
+  lines over 120 fail `npm run lint`. Don't overwrap lines artificially short
+  to hit the limit; keep them close to 120 where possible. The limit applies to
+  ordinary prose and to lines inside fenced code blocks; table rows are exempt
+  (the rule is configured with `tables: false`).
 - **Unordered lists**: Use dashes (`-`) for bullet points. Indent nested list
   items by 4 spaces.
 - **Continuation lines**: When a list item wraps to the next line, align the
@@ -322,21 +310,20 @@ All Markdown files MUST follow these formatting rules:
   two-space line breaks — use a blank line instead.
 - **Bare URLs**: Bare URLs are permitted and do not need to be wrapped in angle
   brackets.
-- **Table formatting**: Align table columns with padding when the table fits
-  within 120 characters. If the table exceeds 120 characters or triggers an MD060
-  linter warning, switch to a compact format using single spaces only. This
-  applies to the separator row as well — it should be written as `| --- |`,
-  not `|--|`.
-
-  Example of correct layout:
+- **Table formatting**: Pad the data cells so the pipes line up vertically
+  (matching the tables in this document), and write the separator row as
+  `| --- |` (a space on each side of the dashes), never `|--|`:
 
   ```markdown
-  | Col1 | Col2 |
-  | --- | --- |
+  | Col1   | Col2   |
+  | ------ | ------ |
   | Value1 | Value2 |
   ```
 
-  Do NOT use extra padding or alignment characters beyond single spaces.
+  Table rows are exempt from the 120-character line-length limit (the
+  `line-length` rule is configured with `tables: false`), so wide tables are
+  permitted; prefer fewer columns or shorter cell text when a table becomes hard
+  to read or review.
 
 **Rationale**: Uniform Markdown formatting improves readability for both humans
 and AI agents that consume project documentation.

@@ -75,38 +75,38 @@ The `RE2` class emulates the standard `RegExp` interface. It can be used as a dr
 new RE2(pattern: string | RegExp | RE2, flags?: string, maxMem?: number)
 ```
 
-| Parameter | Type | Description |
-| --- | --- | --- |
-| `pattern` | `string`, `RegExp`, or `RE2` | The regular expression pattern. Accepts existing `RegExp` or `RE2` objects. |
-| `flags` | `string` | Standard RegExp flags (`g`, `i`, `m`, `s`, `u`, `y`). The `u` flag is **required**. |
-| `maxMem` | `number` | Maximum memory in bytes the regex engine can use. Defaults to `0` (no limit). If exceeded, throws an error. |
+| Parameter | Type                         | Description                                                                                                 |
+| ---       | ---                          | ---                                                                                                         |
+| `pattern` | `string`, `RegExp`, or `RE2` | The regular expression pattern. Accepts existing `RegExp` or `RE2` objects.                                 |
+| `flags`   | `string`                     | Standard RegExp flags (`g`, `i`, `m`, `s`, `u`, `y`). The `u` flag is **required**.                         |
+| `maxMem`  | `number`                     | Maximum memory in bytes the regex engine can use. Defaults to `0` (no limit). If exceeded, throws an error. |
 
 ### Properties
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `lastIndex` | `number` | Index at which to start the next match (used with `g` and `y` flags). |
-| `global` | `boolean` | Whether the `g` flag is set. |
-| `ignoreCase` | `boolean` | Whether the `i` flag is set. |
-| `multiline` | `boolean` | Whether the `m` flag is set. |
-| `dotAll` | `boolean` | Whether the `s` flag is set. |
-| `unicode` | `boolean` | Whether the `u` flag is set. Always `true`. |
-| `sticky` | `boolean` | Whether the `y` flag is set. |
-| `source` | `string` | The original pattern string. |
-| `flags` | `string` | The flags string. |
-| `internalSource` | `string` | The pattern after translation to RE2 syntax (read-only, for debugging). |
+| Property         | Type      | Description                                                             |
+| ---              | ---       | ---                                                                     |
+| `lastIndex`      | `number`  | Index at which to start the next match (used with `g` and `y` flags).   |
+| `global`         | `boolean` | Whether the `g` flag is set.                                            |
+| `ignoreCase`     | `boolean` | Whether the `i` flag is set.                                            |
+| `multiline`      | `boolean` | Whether the `m` flag is set.                                            |
+| `dotAll`         | `boolean` | Whether the `s` flag is set.                                            |
+| `unicode`        | `boolean` | Whether the `u` flag is set. Always `true`.                             |
+| `sticky`         | `boolean` | Whether the `y` flag is set.                                            |
+| `source`         | `string`  | The original pattern string.                                            |
+| `flags`          | `string`  | The flags string.                                                       |
+| `internalSource` | `string`  | The pattern after translation to RE2 syntax (read-only, for debugging). |
 
 ### Methods
 
-| Method | Description |
-| --- | --- |
-| `exec(str: string): RE2ExecArray \| null` | Executes a search for a match. Returns a match array or `null`. |
-| `test(str: string): boolean` | Tests for a match. Returns `true` or `false`. |
-| `toString(): string` | Returns the regex as a string (`/pattern/flags`). |
-| `match(str: string): RE2MatchArray \| null` | Matches the string against the regex. Equivalent to `String.prototype.match`. |
-| `search(str: string): number` | Searches for a match. Equivalent to `String.prototype.search`. |
-| `replace(str: string, replacer: string \| function): string` | Replaces matches. Equivalent to `String.prototype.replace`. |
-| `split(str: string, limit?: number): (string \| undefined)[]` | Splits the string. Equivalent to `String.prototype.split`. |
+| Method                                                        | Description                                                                   |
+| ---                                                           | ---                                                                           |
+| `exec(str: string): RE2ExecArray \| null`                     | Executes a search for a match. Returns a match array or `null`.               |
+| `test(str: string): boolean`                                  | Tests for a match. Returns `true` or `false`.                                 |
+| `toString(): string`                                          | Returns the regex as a string (`/pattern/flags`).                             |
+| `match(str: string): RE2MatchArray \| null`                   | Matches the string against the regex. Equivalent to `String.prototype.match`. |
+| `search(str: string): number`                                 | Searches for a match. Equivalent to `String.prototype.search`.                |
+| `replace(str: string, replacer: string \| function): string`  | Replaces matches. Equivalent to `String.prototype.replace`.                   |
+| `split(str: string, limit?: number): (string \| undefined)[]` | Splits the string. Equivalent to `String.prototype.split`.                    |
 
 The `RE2` class also supports well-known symbols, so `String` methods work directly:
 

@@ -39,18 +39,18 @@
 
 ### Required Tools
 
-| Tool | Version | Purpose |
-| --- | --- | --- |
-| Node.js | ≥ 10 | Runtime for compiled JS/WASM |
-| npm | ≥ 6 (bundled with Node.js) | Package manager |
-| Git | ≥ 2 | Version control |
-| Emscripten (emcc) | latest (`emsdk install latest`) | Compile C++ to WASM |
-| Docker | ≥ 20 | Alternative WASM compilation environment |
+| Tool              | Version                         | Purpose                                  |
+| ----------------- | ------------------------------- | ---------------------------------------- |
+| Node.js           | ≥ 10                            | Runtime for compiled JS/WASM             |
+| npm               | ≥ 6 (bundled with Node.js)      | Package manager                          |
+| Git               | ≥ 2                             | Version control                          |
+| Emscripten (emcc) | latest (`emsdk install latest`) | Compile C++ to WASM                      |
+| Docker            | ≥ 20                            | Alternative WASM compilation environment |
 
 ### Optional Tools
 
-| Tool | Purpose |
-| --- | --- |
+| Tool | Purpose                                                          |
+| ---- | ---------------------------------------------------------------- |
 | make | Parallel C++ compilation (used by both native and Docker builds) |
 
 ## Getting Started
@@ -77,10 +77,12 @@ cd re2-wasm
 npm install
 ```
 
-This installs only Node.js dev dependencies (gts, heya-unit, TypeScript,
-markdownlint). It does **not** compile the WASM module — the `prepare` script
-is skipped via `--ignore-scripts` in CI, and locally you should compile
-separately.
+This installs the Node.js dev dependencies (@types/node, gts, heya-unit,
+markdownlint, markdownlint-cli, TypeScript). The `prepare` script runs
+`npm run compile` automatically, which requires Docker (or a native Emscripten
+SDK) to build the WASM module. To install only the dev dependencies without
+compiling, pass `--ignore-scripts` (this is what CI does); locally, compile the
+project separately as described in [Common Tasks](#common-tasks).
 
 ### Compile the Project
 
@@ -207,14 +209,14 @@ RE2 source files from `deps/re2/`. Output: `wasm/re2.js`.
 
 Emscripten flags used:
 
-| Flag | Purpose |
-| --- | --- |
-| `--bind` | Enable embind for C++/JS interop |
-| `-s WASM=1` | Target WebAssembly |
-| `-s WASM_ASYNC_COMPILATION=0` | Disable async WASM compilation |
-| `-s NODEJS_CATCH_EXIT=0` | Disable Node.js exit catching |
+| Flag                          | Purpose                              |
+| ----------------------------- | ------------------------------------ |
+| `--bind`                      | Enable embind for C++/JS interop     |
+| `-s WASM=1`                   | Target WebAssembly                   |
+| `-s WASM_ASYNC_COMPILATION=0` | Disable async WASM compilation       |
+| `-s NODEJS_CATCH_EXIT=0`      | Disable Node.js exit catching        |
 | `-s NODEJS_CATCH_REJECTION=0` | Disable unhandled rejection catching |
-| `-I deps/re2` | Include path for RE2 headers |
+| `-I deps/re2`                 | Include path for RE2 headers         |
 
 ### Compiling TypeScript
 
@@ -284,20 +286,20 @@ The project uses a **layered architecture** with strict downward dependencies:
 
 ```text
 JavaScript API (src/re2.ts)
-     ↓
+    ↓
 WASM Bridge (wasm/re2.js, wasm/re2.d.ts)
-     ↓
+    ↓
 C++ Bindings (wrap/re2_wrap.cc)
-     ↓
+    ↓
 RE2 Library (deps/re2/)
 ```
 
-| Layer | Files | Purpose |
-| --- | --- | --- |
-| JavaScript API | `src/re2.ts` | `RE2` class implementing the `RegExp` interface |
-| WASM Bridge | `wasm/re2.js`, `wasm/re2.d.ts` | Compiled WASM module and TypeScript declarations |
-| C++ Bindings | `wrap/re2_wrap.cc` | Emscripten embind wrappers for RE2 C++ objects |
-| RE2 Library | `deps/re2/` | Google's RE2 regex engine (vendored submodule) |
+| Layer          | Files                          | Purpose                                          |
+| -------------- | ------------------------------ | ------------------------------------------------ |
+| JavaScript API | `src/re2.ts`                   | `RE2` class implementing the `RegExp` interface  |
+| WASM Bridge    | `wasm/re2.js`, `wasm/re2.d.ts` | Compiled WASM module and TypeScript declarations |
+| C++ Bindings   | `wrap/re2_wrap.cc`             | Emscripten embind wrappers for RE2 C++ objects   |
+| RE2 Library    | `deps/re2/`                    | Google's RE2 regex engine (vendored submodule)   |
 
 Key architectural details:
 
