@@ -59,7 +59,13 @@ bounded memory usage.
 ├── third_party/
 │   └── node-re2/
 │       └── tests/         # Test suite adapted from node-re2
-├── bamboo-specs/          # Bamboo CI pipeline specs (build/test/deploy/increment)
+├── .github/
+│   ├── workflows/         # GitHub Actions CI/CD pipelines
+│   │   ├── ci.yml             # Lint, test, build on PRs and pushes to main
+│   │   ├── mirror.yml         # Mirror to the public AdguardTeam repository
+│   │   ├── prepare-release.yml  # Create the release PR via a shared action
+│   │   └── publish-release.yml  # Publish to npmjs.org and GitHub Packages
+│   └── release-please.yml # release-please configuration (primary branch: main)
 ├── docs/                  # Design docs and contribution guidelines
 ├── package.json           # npm package manifest
 ├── tsconfig.json          # TypeScript configuration (extends gts)

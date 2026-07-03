@@ -25,25 +25,8 @@ FROM deps AS source
 COPY . /re2-wasm
 
 # ============================================================================
-# Stage: lint
-# Runs gts lint
-# ============================================================================
-FROM source AS lint
-
-ARG BUILD_RUN_ID=""
-
-RUN echo "${BUILD_RUN_ID}" > /tmp/.build-run-id && \
-    mkdir -p /out && \
-    touch /out/lint.txt && \
-    npm run lint
-
-FROM scratch AS lint-output
-COPY --from=lint /out/ /
-
-# ============================================================================
 # Stage: test
-# Compiles WASM with emscripten, compiles TypeScript, then runs tests
-# Always exits 0 — exit code stored in /out/exit-code.txt for Bamboo to check
+# Runs lint, compiles WASM with emscripten, compiles TypeScript, runs tests.
 # ============================================================================
 FROM source AS test
 
@@ -51,8 +34,9 @@ ARG BUILD_RUN_ID=""
 
 RUN echo "${BUILD_RUN_ID}" > /tmp/.build-run-id && \
     mkdir -p /out && \
+    npm run lint && \
     make -j$(nproc) && npx tsc && cp -r wasm build/ && node scripts/build-info.js && \
-    { node ./third_party/node-re2/tests/tests.js; echo $? > /out/exit-code.txt; }
+    node ./third_party/node-re2/tests/tests.js
 
 FROM scratch AS test-output
 COPY --from=test /out/ /
@@ -60,7 +44,7 @@ COPY --from=test /out/ /
 # ============================================================================
 # Stage: build
 # Compiles WASM with emscripten, compiles TypeScript, packs .tgz for npm
-# publish, and exports build.txt for Bamboo variable injection
+# publish, and copies build.txt into the artifact output.
 # ============================================================================
 FROM source AS build
 

@@ -1,0 +1,53 @@
+name: Publish release
+
+description: >-
+  Tags the release commit, builds, tests, publishes to npmjs.org and
+  GitHub Packages, mirrors to the public repo, drafts a GitHub Release,
+  and notifies Slack.
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Ref to publish manually
+        required: false
+        type: string
+
+jobs:
+  publish-npm:
+    uses: AdGuardSoftwareLimited/ext-shared-actions/.github/workflows/publish-release.yml@master
+    with:
+      package_file: re2-wasm.tgz
+      npm_package_name: "@adguard/re2-wasm"
+      target_repo: AdguardTeam/re2-wasm
+      submodules: true
+      ref: ${{ inputs.ref }}
+    secrets: inherit
+    permissions:
+      contents: write
+      id-token: write
+      actions: write
+
+  publish-github-packages:
+    name: Publish to GitHub Packages
+    needs: publish-npm
+    runs-on: team-extensions
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref || github.event.pull_request.merge_commit_sha || github.ref_name }}
+          submodules: recursive
+
+      - name: Build release artifacts
+        run: DOCKER_BUILDKIT=1 docker build --progress plain --target build-output --output ./artifacts .
+
+      - name: Publish to GitHub Packages
+        run: |
+          npm pkg set name="@AdguardTeam/re2-wasm"
+          npm publish artifacts/re2-wasm.tgz --registry=https://npm.pkg.github.com
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
