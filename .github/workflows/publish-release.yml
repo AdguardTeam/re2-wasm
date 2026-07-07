@@ -27,8 +27,11 @@ jobs:
       ref: ${{ inputs.ref }}
     secrets: inherit
     permissions:
+      # Create tags and draft the GitHub Release on the source repo
       contents: write
+      # Required for OIDC trusted publishing to npmjs.org
       id-token: write
+      # Trigger downstream reusable workflows (e.g. mirror, Slack notify)
       actions: write
 
   publish-github-packages:
