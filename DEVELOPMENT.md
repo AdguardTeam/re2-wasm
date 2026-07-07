@@ -22,7 +22,6 @@
     - [Full Build Pipeline](#full-build-pipeline)
     - [Linting](#linting)
     - [Auto-fixing Lint Issues](#auto-fixing-lint-issues)
-    - [Bumping the Version](#bumping-the-version)
     - [Cleaning Build Artifacts](#cleaning-build-artifacts)
 - [Project Architecture](#project-architecture)
     - [Layers](#layers)
@@ -260,15 +259,6 @@ npm run fix
 ```
 
 Runs `gts fix src/*.ts` to auto-correct TypeScript formatting.
-
-### Bumping the Version
-
-```sh
-npm run increment
-```
-
-Bumps the patch version in `package.json` without creating a git tag. Update
-[CHANGELOG.md](CHANGELOG.md) manually after bumping.
 
 ### Cleaning Build Artifacts
 

@@ -103,9 +103,6 @@ npm run fix
 
 # Clean build artifacts
 npm run clean
-
-# Bump patch version (no git tag)
-npm run increment
 ```
 
 The full build pipeline is documented in

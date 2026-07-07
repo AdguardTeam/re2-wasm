@@ -1,6 +1,5 @@
 {
   "name": "@adguard/re2-wasm",
-  "version": "1.2.0",
   "keywords": [
     "regexp",
     "re2",
@@ -23,8 +22,7 @@
     "fix": "gts fix src/*.ts",
     "prepare": "npm run compile",
     "pretest": "npm run compile",
-    "posttest": "npm run lint",
-    "increment": "npm version patch --no-git-tag-version"
+    "posttest": "npm run lint"
   },
   "author": "",
   "license": "Apache-2.0",
