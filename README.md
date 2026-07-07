@@ -5,6 +5,11 @@
 
 > Google's RE2 library distributed as a WASM module patched by AdGuard.
 
+> **Note:** This package is developed in
+> [AdGuardSoftwareLimited/ext-re2-wasm](https://github.com/AdGuardSoftwareLimited/ext-re2-wasm).
+> The [AdguardTeam/re2-wasm](https://github.com/AdguardTeam/re2-wasm)
+> repository is a public mirror.
+
 ## Description
 
 **@adguard/re2-wasm** is a fork of Google's [re2-wasm](https://github.com/google/re2-wasm) that adds a configurable
