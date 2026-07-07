@@ -54,8 +54,7 @@ bounded memory usage.
 │   └── re2.d.ts           # TypeScript type declarations for the WASM module
 ├── deps/
 │   └── re2/               # Vendored Google RE2 C++ library (git submodule)
-├── scripts/
-│   └── build-info.js      # Writes build.txt with the package version
+
 ├── third_party/
 │   └── node-re2/
 │       └── tests/         # Test suite adapted from node-re2
@@ -64,8 +63,7 @@ bounded memory usage.
 │   │   ├── ci.yml             # Lint, test, build on PRs and pushes to main
 │   │   ├── mirror.yml         # Mirror to the public AdguardTeam repository
 │   │   ├── prepare-release.yml  # Create the release PR via a shared action
-│   │   └── publish-release.yml  # Publish to npmjs.org and GitHub Packages
-│   └── release-please.yml # release-please configuration (primary branch: main)
+│   │   └── publish-release.yml  # Publish to npmjs.org, mirror, GitHub Release
 ├── docs/                  # Design docs and contribution guidelines
 ├── package.json           # npm package manifest
 ├── tsconfig.json          # TypeScript configuration (extends gts)

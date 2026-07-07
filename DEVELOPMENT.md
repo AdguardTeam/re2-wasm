@@ -237,7 +237,6 @@ Equivalent to running sequentially:
 1. `make -j12` — C++ → WASM
 2. `tsc` — TypeScript → JS
 3. `cp -r wasm build/` — copy WASM assets
-4. `node scripts/build-info.js` — write `build/build.txt`
 
 ### Linting
 
@@ -313,10 +312,9 @@ build/
 │   ├── re2.js          # Compiled TypeScript
 │   ├── re2.d.ts        # TypeScript declarations
 │   └── re2.js.map      # Source maps
-├── wasm/
-│   ├── re2.js          # Compiled WASM module
-│   └── re2.d.ts        # WASM type declarations
-└── build.txt           # Version info
+└── wasm/
+    ├── re2.js          # Compiled WASM module
+    └── re2.d.ts        # WASM type declarations
 ```
 
 ## Troubleshooting

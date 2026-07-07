@@ -18,7 +18,7 @@
     "clean": "gts clean",
     "compile-emcc": "docker run --rm -v $(pwd):/src emscripten/emsdk make -j12",
     "compile-ts": "tsc && cp -r wasm build/",
-    "compile": "make -j12 && tsc && cp -r wasm build/ && node scripts/build-info.js",
+    "compile": "make -j12 && tsc && cp -r wasm build/",
     "fix": "gts fix src/*.ts",
     "prepare": "npm run compile",
     "pretest": "npm run compile",

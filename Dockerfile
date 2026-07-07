@@ -35,7 +35,7 @@ ARG BUILD_RUN_ID=""
 RUN echo "${BUILD_RUN_ID}" > /tmp/.build-run-id && \
     mkdir -p /out && \
     npm run lint && \
-    make -j$(nproc) && npx tsc && cp -r wasm build/ && node scripts/build-info.js && \
+    make -j$(nproc) && npx tsc && cp -r wasm build/ && \
     node ./third_party/node-re2/tests/tests.js
 
 FROM scratch AS test-output
@@ -43,19 +43,18 @@ COPY --from=test /out/ /
 
 # ============================================================================
 # Stage: build
-# Compiles WASM with emscripten, compiles TypeScript, packs .tgz for npm
-# publish, and copies build.txt into the artifact output.
+# Compiles WASM with emscripten, compiles TypeScript, and packs .tgz for
+# npm publish.
 # ============================================================================
 FROM source AS build
 
 ARG BUILD_RUN_ID=""
 
 RUN echo "${BUILD_RUN_ID}" > /tmp/.build-run-id && \
-    make -j$(nproc) && npx tsc && cp -r wasm build/ && node scripts/build-info.js && \
+    make -j$(nproc) && npx tsc && cp -r wasm build/ && \
     npm pack && mv adguard-re2-wasm-*.tgz re2-wasm.tgz && \
     mkdir -p /out/artifacts && \
-    mv re2-wasm.tgz /out/artifacts/ && \
-    cp build/build.txt /out/artifacts/
+    mv re2-wasm.tgz /out/artifacts/
 
 FROM scratch AS build-output
 COPY --from=build /out/ /
