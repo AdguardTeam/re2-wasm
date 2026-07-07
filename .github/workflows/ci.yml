@@ -21,6 +21,33 @@ jobs:
       - name: Lint and test via Docker
         run: DOCKER_BUILDKIT=1 docker build --progress plain --target test-output .
 
+      - name: Set dev version
+        run: |
+          # package.json ships version-less by convention; the real release
+          # version is injected at publish time by
+          # ext-shared-actions/publish-release.yml (from the release tag).
+          # For non-release CI builds, stamp a dev version so `npm pack` in the
+          # build stage can produce a tarball: take the latest CHANGELOG
+          # release, bump its patch, and append "-dev" (e.g. 1.2.0 -> 1.2.1-dev).
+          # Fall back to the newest git tag, then 0.0.0.
+          set +e
+          LATEST="$(grep -oE '## \[[0-9]+\.[0-9]+\.[0-9]+[^]]*\]' CHANGELOG.md \
+            | head -n1 | sed -E 's/## \[([^]]+)\].*/\1/')"
+          if [ -z "${LATEST:-}" ]; then
+            LATEST="$(git tag --sort=-v:refname | head -n1 | sed -E 's/^v//')"
+          fi
+          set -e
+          : "${LATEST:=0.0.0}"
+          CORE="$(printf '%s' "$LATEST" | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+')"
+          : "${CORE:=0.0.0}"
+          MAJOR="$(printf '%s' "$CORE" | cut -d. -f1)"
+          MINOR="$(printf '%s' "$CORE" | cut -d. -f2)"
+          PATCH="$(printf '%s' "$CORE" | cut -d. -f3)"
+          PATCH=$((PATCH + 1))
+          DEV_VERSION="${MAJOR}.${MINOR}.${PATCH}-dev"
+          echo "Dev version: ${DEV_VERSION}"
+          npm pkg set version="${DEV_VERSION}"
+
       - name: Build release artifacts
         run: DOCKER_BUILDKIT=1 docker build --progress plain --target build-output --output ./artifacts .
 
