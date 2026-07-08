@@ -1,316 +1,251 @@
-# Fork disclaimer
+# @adguard/re2-wasm [![NPM version][npm-img]][npm-url]
 
-This is a fork of [re2-wasm] that allows specifying maximum memory limit for
-a regular expression. Having this version is important for properly validating
-regular expressions in a browser extension that uses Declarative Net Request.
+[npm-img]: https://img.shields.io/npm/v/@adguard/re2-wasm.svg
+[npm-url]: https://npmjs.org/package/@adguard/re2-wasm
 
-How to clone:
-This library contains a submodule, so you need to clone it recursively:
+> Google's RE2 library distributed as a WASM module patched by AdGuard.
 
-```sh
-    git clone --recursive git@github.com:AdguardTeam/re2-wasm.git
-```
+> **Note:** This package is developed in
+> [AdGuardSoftwareLimited/ext-re2-wasm](https://github.com/AdGuardSoftwareLimited/ext-re2-wasm).
+> The [AdguardTeam/re2-wasm](https://github.com/AdguardTeam/re2-wasm)
+> repository is a public mirror.
 
-How to compile locally:
+## Description
 
-If your machine has supported docker images (Mac OS on M1 does not have them yet):
+**@adguard/re2-wasm** is a fork of Google's [re2-wasm](https://github.com/google/re2-wasm) that adds a configurable
+maximum memory limit for regular expressions. It compiles Google's [RE2](https://github.com/google/re2) C++ library to
+WASM via Emscripten and exposes it as a drop-in replacement for JavaScript's `RegExp`.
 
-```sh
-npm install
-npm run compile-emcc # or check prerequisites for Mac OS below
-npm run compile-ts
-```
-
-If not:
-
-Prerequisites for Mac OS:
-You need to have installed Emscripten SDK.
-https://emscripten.org/docs/getting_started/downloads.html#download-and-install
-```
-# Get the emsdk repo
-git clone https://github.com/emscripten-core/emsdk.git
-
-# Enter that directory
-cd emsdk
-
-# Fetch the latest version of the emsdk (not needed the first time you clone)
-git pull
-
-# Download and install the latest SDK tools.
-./emsdk install latest
-
-# Make the "latest" SDK "active" for the current user. (writes .emscripten file)
-./emsdk activate latest
-
-# Activate PATH and other environment variables in the current terminal
-source ./emsdk_env.sh
-
-```
-
-```sh
-npm install
-npm run compile
-npm run compile-ts
-```
-
-Run tests to check that it works (see `test_invalid.js` for the test that checks
-that memory limit actually works):
-
-```sh
-npm run test
-```
-
-[re2-wasm]: https://github.com/google/re2-wasm
-
-**Below is the original README content.**
-
-# re2-wasm [![NPM version][npm-img]][npm-url]
-
-[npm-img]: https://img.shields.io/npm/v/re2-wasm.svg
-[npm-url]: https://npmjs.org/package/re2-wasm
-
-**This is not an officially supported Google product.**
-
-This README is modified from the node-re2 README, licensed under The "New" BSD License
-
-This project provides bindings for [RE2](https://github.com/google/re2):
-fast, safe alternative to backtracking regular expression engines written by [Russ Cox](http://swtch.com/~rsc/).
-To learn more about RE2, start with an overview
-[Regular Expression Matching in the Wild](http://swtch.com/~rsc/regexp/regexp3.html). More resources can be found
-at his [Implementing Regular Expressions](http://swtch.com/~rsc/regexp/) page.
+This library is for JavaScript and TypeScript developers who need to handle user-supplied regular expressions
+safely. The built-in `RegExp` engine can run in exponential time with a vulnerable regular expression and
+"evil input", leading to [Regular Expression Denial of Service
+(ReDoS)](https://www.owasp.org/index.php/Regular_expression_Denial_of_Service_-_ReDoS). RE2 guarantees
+linear-time matching, protecting your application from ReDoS attacks. The AdGuard fork adds bounded memory
+usage via the `maxMem` option — the engine throws an error if a match attempt exceeds the configured memory
+limit, preventing runaway resource consumption.
 
 `RE2`'s regular expression language is almost a superset of what is provided by `RegExp`
-(see [Syntax](https://github.com/google/re2/wiki/Syntax)),
-but it lacks two features: backreferences and lookahead assertions. See below for more details.
+(see [Syntax](https://github.com/google/re2/wiki/Syntax)), but it lacks two features: backreferences and lookahead
+assertions. See [Differences from RegExp](#differences-from-regexp) for details.
 
-`RE2` object emulates standard `RegExp` making it a practical drop-in replacement in most cases.
-`RE2` is extended to provide `String`-based regular expression methods as well. To help to convert
-`RegExp` objects to `RE2` its constructor can take `RegExp` directly honoring all properties.
+## Table of Contents
 
-## Why use re2-wasm?
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [API Overview](#api-overview)
+- [Usage Examples](#usage-examples)
+- [Differences from RegExp](#differences-from-regexp)
+- [Documentation](#documentation)
 
-The built-in Node.js regular expression engine can run in exponential time with a special combination:
- - A vulnerable regular expression
- - "Evil input"
+---
 
-This can lead to what is known as a [Regular Expression Denial of Service (ReDoS)](https://www.owasp.org/index.php/Regular_expression_Denial_of_Service_-_ReDoS).
-To tell if your regular expressions are vulnerable, you might try the one of these projects:
- - [rxxr2](http://www.cs.bham.ac.uk/~hxt/research/rxxr2/)
- - [safe-regex](https://github.com/substack/safe-regex)
+## Installation
 
-However, neither project is perfect.
+```bash
+npm install @adguard/re2-wasm
+```
 
-re2-wasm can protect your Node.js application from ReDoS.
-re2-wasm makes vulnerable regular expression patterns safe by evaluating them in `RE2` instead of the built-in Node.js regex engine.
+Requires Node.js ≥ 10 or a browser with WASM support. The package has zero runtime dependencies — all functionality
+comes from the compiled WASM module.
 
-## Standard features
-
-`RE2` object can be created just like `RegExp`:
-
-* [`new RE2(pattern[, flags])`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp)
-
-Supported properties:
-
-* [`re2.lastIndex`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/lastIndex)
-* [`re2.global`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/global)
-* [`re2.ignoreCase`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/ignoreCase)
-* [`re2.multiline`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/multiline)
-* [`re2.unicode`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/unicode)
-  * `RE2` engine always works in the Unicode mode. See details below.
-* [`re2.sticky`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/sticky)
-* [`re2.source`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/source)
-* [`re2.flags`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/flags)
-
-Supported methods:
-
-* [`re2.exec(str)`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec)
-* [`re2.test(str)`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/test)
-* [`re2.toString()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/toString)
-
-The following well-known symbol-based methods are supported (see [Symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol)):
-
-* [`re2[Symbol.match](str)`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/match)
-* [`re2[Symbol.matchAll](str)`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/matchAll)
-* [`re2[Symbol.search](str)`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/search)
-* [`re2[Symbol.replace](str, newSubStr|function)`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/replace)
-* [`re2[Symbol.split](str[, limit])`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/split)
-
-It allows to use `RE2` instances on strings directly, just like `RegExp` instances:
+## Quick Start
 
 ```js
-var re = new RE2("1", 'u');
-"213".match(re);        // [ '1', index: 1, input: '213' ]
-"213".search(re);       // 1
-"213".replace(re, "+"); // 2+3
-"213".split(re);        // [ '2', '3' ]
+const { RE2 } = require('@adguard/re2-wasm');
+
+const re = new RE2('hello (\\w+)', 'u');
+const result = re.exec('hello world');
+// result[0]: 'hello world'
+// result[1]: 'world'
+// result.index: 0
+console.log(result[0]); // 'hello world'
 ```
 
-[Named groups](https://tc39.github.io/proposal-regexp-named-groups/) are supported.
-
-## Extensions
-
-### Shortcut construction
-
-`RE2` object can be created from a regular expression:
+Or with ES modules:
 
 ```js
-var re1 = new RE2(/ab*/igu); // from a RegExp object
-var re2 = new RE2(re1);     // from another RE2 object
+import { RE2 } from '@adguard/re2-wasm';
+
+const re = new RE2('\\d+', 'gu');
+'abc 123 def 456'.match(re); // ['123', '456']
 ```
 
-### `String` methods
+## API Overview
 
-Standard `String` defines four more methods that can use regular expressions. `RE2` provides them as methods
-exchanging positions of a string, and a regular expression:
+The `RE2` class emulates the standard `RegExp` interface. It can be used as a drop-in replacement in most cases.
 
-* `re2.match(str)`
-  * See [`str.match(regexp)`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/match)
-* `re2.replace(str, newSubStr|function)`
-  * See [`str.replace(regexp, newSubStr|function)`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace)
-* `re2.search(str)`
-  * See [`str.search(regexp)`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/search)
-* `re2.split(str[, limit])`
-  * See [`str.split(regexp[, limit])`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split)
+### Constructor
 
-### Property: `internalSource`
-
-Starting 1.8.0 property `source` emulates the same property of `RegExp`, meaning that it can be used to create an identical `RE2` or `RegExp` instance. Sometimes, for troubleshooting purposes, a user wants to inspect a `RE2` translated source. It is available as a read-only property called `internalSource`.
-
-### Unicode Mode
-
-The `RE2` engine only works in Unicode mode, so the `RE2` class must always be constructed with the `u` flag to enable unicode mode.
-
-## How to install
-
-Installation:
-
-```
-npm install --save re2-wasm
+```ts
+new RE2(pattern: string | RegExp | RE2, flags?: string, maxMem?: number)
 ```
 
-## How to use
+| Parameter | Type                         | Description                                                                                                 |
+| ---       | ---                          | ---                                                                                                         |
+| `pattern` | `string`, `RegExp`, or `RE2` | The regular expression pattern. Accepts existing `RegExp` or `RE2` objects.                                 |
+| `flags`   | `string`                     | Standard RegExp flags (`g`, `i`, `m`, `s`, `u`, `y`). The `u` flag is **required**.                         |
+| `maxMem`  | `number`                     | Maximum memory in bytes the regex engine can use. Defaults to `0` (no limit). If exceeded, throws an error. |
 
-It is used just like a `RegExp` object.
+### Properties
+
+| Property         | Type      | Description                                                             |
+| ---              | ---       | ---                                                                     |
+| `lastIndex`      | `number`  | Index at which to start the next match (used with `g` and `y` flags).   |
+| `global`         | `boolean` | Whether the `g` flag is set.                                            |
+| `ignoreCase`     | `boolean` | Whether the `i` flag is set.                                            |
+| `multiline`      | `boolean` | Whether the `m` flag is set.                                            |
+| `dotAll`         | `boolean` | Whether the `s` flag is set.                                            |
+| `unicode`        | `boolean` | Whether the `u` flag is set. Always `true`.                             |
+| `sticky`         | `boolean` | Whether the `y` flag is set.                                            |
+| `source`         | `string`  | The original pattern string.                                            |
+| `flags`          | `string`  | The flags string.                                                       |
+| `internalSource` | `string`  | The pattern after translation to RE2 syntax (read-only, for debugging). |
+
+### Methods
+
+| Method                                                        | Description                                                                   |
+| ---                                                           | ---                                                                           |
+| `exec(str: string): RE2ExecArray \| null`                     | Executes a search for a match. Returns a match array or `null`.               |
+| `test(str: string): boolean`                                  | Tests for a match. Returns `true` or `false`.                                 |
+| `toString(): string`                                          | Returns the regex as a string (`/pattern/flags`).                             |
+| `match(str: string): RE2MatchArray \| null`                   | Matches the string against the regex. Equivalent to `String.prototype.match`. |
+| `search(str: string): number`                                 | Searches for a match. Equivalent to `String.prototype.search`.                |
+| `replace(str: string, replacer: string \| function): string`  | Replaces matches. Equivalent to `String.prototype.replace`.                   |
+| `split(str: string, limit?: number): (string \| undefined)[]` | Splits the string. Equivalent to `String.prototype.split`.                    |
+
+The `RE2` class also supports well-known symbols, so `String` methods work directly:
 
 ```js
-var { RE2 } = require("re2-wasm");
-
-// with default flags
-var re = new RE2("a(b*)", 'u');
-var result = re.exec("abbc");
-console.log(result[0]); // "abb"
-console.log(result[1]); // "bb"
-
-result = re.exec("aBbC");
-console.log(result[0]); // "a"
-console.log(result[1]); // ""
-
-// with explicit flags
-re = new RE2("a(b*)", "iu");
-result = re.exec("aBbC");
-console.log(result[0]); // "aBb"
-console.log(result[1]); // "Bb"
-
-// from regular expression object
-var regexp = new RegExp("a(b*)", "iu");
-re = new RE2(regexp);
-result = re.exec("aBbC");
-console.log(result[0]); // "aBb"
-console.log(result[1]); // "Bb"
-
-// from regular expression literal
-re = new RE2(/a(b*)/iu);
-result = re.exec("aBbC");
-console.log(result[0]); // "aBb"
-console.log(result[1]); // "Bb"
-
-// from another RE2 object
-var rex = new RE2(re);
-result = rex.exec("aBbC");
-console.log(result[0]); // "aBb"
-console.log(result[1]); // "Bb"
-
-// shortcut
-result = new RE2("ab*", 'u').exec("abba");
+const re = new RE2('\\d+', 'u');
+'abc 123'.match(re);        // ['123', index: 4, input: 'abc 123']
+'abc 123'.search(re);       // 4
+'abc 123'.replace(re, 'X'); // 'abc X'
+'abc 123'.split(re);        // ['abc ', '']
 ```
 
-## Limitations (things RE2 does not support)
+## Usage Examples
 
-`RE2` consciously avoids any regular expression features that require worst-case exponential time to evaluate.
-These features are essentially those that describe a Context-Free Language (CFL) rather than a Regular Expression,
-and are extensions to the traditional regular expression language because some people don't know when enough is enough.
-
-The most noteworthy missing features are backreferences and lookahead assertions.
-If your application uses these features, you should continue to use `RegExp`.
-But since these features are fundamentally vulnerable to
-[ReDoS](https://www.owasp.org/index.php/Regular_expression_Denial_of_Service_-_ReDoS),
-you should strongly consider replacing them.
-
-`RE2` will throw a `SyntaxError` if you try to declare a regular expression using these features.
-If you are evaluating an externally-provided regular expression, wrap your `RE2` declarations in a try-catch block. It allows to use `RegExp`, when `RE2` misses a feature:
+### Constructing from a RegExp object
 
 ```js
-var re = /(a)+(b)*/u;
+const orig = /\w+/gu;
+const re = new RE2(orig);
+// Flags and pattern are copied from the original
+console.log(re.flags); // 'gu'
+```
+
+### Using the maxMem option to bound memory
+
+```js
+// Limit the regex engine to 4 KB of memory
+const re = new RE2('a*b*c*d*e*f*g*h*i*j*k*l*m*n*o*p*q*r*s*t*u*v*w*x*y*z*', 'u', 4096);
 try {
-  re = new RE2(re);
-  // use RE2 as a drop-in replacement
+  re.exec('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
 } catch (e) {
-  // suppress an error, and use
-  // the original RegExp
+  console.log('Pattern exceeded memory limit');
 }
-var result = re.exec(sample);
 ```
 
-In addition to these missing features, `RE2` also behaves somewhat differently from the built-in regular expression engine in corner cases.
-
-### Backreferences
-
-`RE2` doesn't support backreferences, which are numbered references to previously
-matched groups, like so: `\1`, `\2`, and so on. Example of backrefrences:
+### Named capture groups
 
 ```js
-/(cat|dog)\1/.test("catcat"); // true
-/(cat|dog)\1/.test("dogdog"); // true
-/(cat|dog)\1/.test("catdog"); // false
-/(cat|dog)\1/.test("dogcat"); // false
+const re = new RE2('(?P<word>\\w+) (?P<number>\\d+)', 'u');
+const result = re.exec('hello 42');
+console.log(result.groups.word);   // 'hello'
+console.log(result.groups.number); // '42'
 ```
 
-### Lookahead assertions
-
-`RE2` doesn't support lookahead assertions, which are ways to allow a matching dependent on subsequent contents.
+### Using Symbol.matchAll
 
 ```js
-/abc(?=def)/; // match abc only if it is followed by def
-/abc(?!def)/; // match abc only if it is not followed by def
+const re = new RE2('\\w+', 'gu');
+for (const match of 'one two three'.matchAll(re)) {
+  console.log(match[0]);
+}
+// 'one'
+// 'two'
+// 'three'
 ```
 
-### Mismatched behavior
-
-`RE2` and the built-in regex engines disagree a bit. Before you switch to `RE2`, verify that your regular expressions continue to work as expected. They should do so in the vast majority of cases.
-
-Here is an example of a case where they may not:
+### Replacing with a function
 
 ```js
-var { RE2 }  = require("re2-wasm");
-
-var pattern = '(?:(a)|(b)|(c))+';
-
-var built_in = new RegExp(pattern);
-var re2 = new RE2(pattern, 'u');
-
-var input = 'abc';
-
-var bi_res = built_in.exec(input);
-var re2_res = re2.exec(input);
-
-console.log('bi_res: ' + bi_res);    // prints: bi_res: abc,,,c
-console.log('re2_res : ' + re2_res); // prints: re2_res : abc,a,b,c
+const re = new RE2('(\\d+)', 'gu');
+const result = re.replace('a 10 b 20 c 30', (match, n) => String(Number(n) * 2));
+console.log(result); // 'a 20 b 40 c 60'
 ```
 
-### Unicode
+### Falling back to RegExp for unsupported patterns
 
-`RE2` only works in the Unicode mode. The `u` flag must be passed to the `RE2` constructor.
+```js
+const pattern = /(a)+(b)*\\1/u;
+let re;
+try {
+  re = new RE2(pattern);
+} catch (e) {
+  // Pattern uses backreferences — fall back to RegExp
+  re = pattern;
+}
+const result = re.exec('aabbaabb');
+```
 
-## License
+## Differences from RegExp
 
-Apache 2.0
+### Backreferences and lookahead assertions not supported
+
+`RE2` does not support backreferences (`\\1`, `\\2`, etc.) or lookahead/lookbehind assertions (`(?=...)`, `(?<=...)`,
+`(?!...)`, `(?<!...)`). Attempting to use these features throws a `SyntaxError`. If your patterns require them,
+fall back to `RegExp` (see the [fallback example](#falling-back-to-regexp-for-unsupported-patterns) above).
+
+### Unicode flag is mandatory
+
+The `RE2` engine always works in Unicode mode. The `u` flag must be passed when constructing an `RE2` instance:
+
+```js
+new RE2('\\w+');           // throws Error: "u" flag must be passed
+new RE2('\\w+', 'u');      // OK
+```
+
+### Memory limit
+
+The `maxMem` constructor parameter (an AdGuard extension) restricts how much memory the regex engine can allocate
+during matching. If the limit is exceeded, the engine throws an error. Pass `0` (the default) for no limit.
+
+### Dot behavior
+
+In RE2, `.` matches any character including `\\n`, regardless of whether the `m` or `s` flags are set. This is
+equivalent to `RegExp`'s `s` (dotAll) flag always being on:
+
+```js
+const re = new RE2('a.b', 'u');
+console.log(re.exec('a\\nb')); // ['a\\nb']
+console.log(/a.b/u.exec('a\\nb')); // null
+```
+
+### Anchors in multiline mode
+
+In multiline mode, `$` in RE2 does not match between `\\r` and `\\n` when the string ends with `\\r\\n`:
+
+```js
+const re = new RE2('a$', 'mu');
+re.exec('a\\r\\n'); // null — RE2 does not match between \\r and \\n
+/a$/mu.exec('a\\r\\n'); // ['a'] — RegExp matches between \\r and \\n
+```
+
+### `compile()` method
+
+`RegExp.prototype.compile()` is deprecated and not implemented in `RE2`. Calling it throws an error. Create a new
+`RE2` instance instead.
+
+### `d` flag (hasIndices)
+
+The `hasIndices` (`d`) flag is not supported. Use `RegExp` with the `d` flag if you need start and end indices of
+capture groups.
+
+---
+
+## Documentation
+
+- [Development](DEVELOPMENT.md) — how to set up and contribute
+- [Changelog](CHANGELOG.md) — version history
+- [LLM agent rules](AGENTS.md) — AI-assisted development guidelines
