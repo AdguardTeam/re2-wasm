@@ -1,11 +1,11 @@
 name: Mirror
 
-description: Mirrors code to the public repo on every push to main.
+description: Mirrors code to the public repo on every push to master.
 
 on:
   push:
     branches:
-      - main
+      - master
 
 # `contents: read` — checkout source repo
 # `actions: write` — disable workflows in the public mirror

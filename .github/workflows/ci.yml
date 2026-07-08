@@ -1,12 +1,12 @@
 name: CI
 
-description: Lints, tests, and builds on pull requests and pushes to main.
+description: Lints, tests, and builds on pull requests and pushes to master.
 
 on:
   pull_request:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   test:
