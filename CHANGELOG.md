@@ -21,7 +21,10 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ### Security
 
-[Unreleased]: https://github.com/AdguardTeam/re2-wasm/compare/v1.2.0...HEAD
+## [1.2.1] - 2026-07-10
+
+[Unreleased]: https://github.com/AdguardTeam/re2-wasm/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/AdguardTeam/re2-wasm/compare/v1.2.0...v1.2.1
 
 ## [1.2.0] - 2024-06-19
 
