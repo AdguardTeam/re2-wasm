@@ -57,4 +57,4 @@ RUN echo "${BUILD_RUN_ID}" > /tmp/.build-run-id && \
     mv re2-wasm.tgz /out/artifacts/
 
 FROM scratch AS build-output
-COPY --from=build /out/ /
+COPY --from=build /out/artifacts/ /
